@@ -6,4 +6,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @interface Cache {
+    long value() default 0;
 }

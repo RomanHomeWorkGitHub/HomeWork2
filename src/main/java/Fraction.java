@@ -1,3 +1,7 @@
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Map;
+
 /**
  * Created by Роман on 03.03.2024
  **/
@@ -31,7 +35,7 @@ public class Fraction implements Fractionable {
     }
 
     @Override
-    @Cache
+    @Cache()
     public double doubleValue() {
         System.out.println("Мы чегото порешали!!!");
         return (double) num/denum;

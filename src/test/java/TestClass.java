@@ -1,6 +1,11 @@
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.RepeatedTest;
 
+import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
 
 /**
@@ -8,30 +13,77 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  **/
 class TestClass {
 
-    CacheTestClass clazz = new CacheTestClass(2, 4);
-    Cacheable proxy = CacheUtilsClass.cache(clazz);
+    CacheTestClass clazz;
+    Cacheable proxy;
 
-    @Test
+    @BeforeEach
+    void setUp() {
+        clazz = spy(new CacheTestClass(2, 40));
+        proxy = CacheUtilsClass.cache(clazz);
+    }
+
+    @AfterEach
+    void clear() {
+        InterfaceInvocationHandler.concurrentHashMap.clear();
+    }
+
+    @RepeatedTest(10)
     void cache_ok() {
         proxy.doubleValue();
         proxy.doubleValue();
-        assertEquals(1, clazz.count);
+        verify(clazz, times(1)).doubleValue();
     }
 
-    @Test
+    @RepeatedTest(10)
     void cache_resetCacheOk() {
         proxy.doubleValue();
         proxy.doubleValue();
         proxy.setDenum(8);
-        assertEquals(2, clazz.count);
-    }
-
-    @Test
-    void cache_recalculationCacheOk() {
+        proxy.doubleValue();
+        proxy.doubleValue();
+        proxy.setDenum(40);
         proxy.doubleValue();
         proxy.doubleValue();
         proxy.setDenum(8);
         proxy.doubleValue();
-        assertEquals(3, clazz.count);
+        verify(clazz, times(2)).doubleValue();
+    }
+
+    @RepeatedTest(10)
+    void cache_recalculationCacheOk() throws InterruptedException {
+        proxy.doubleValue();
+        proxy.doubleValue();
+        proxy.setDenum(8);
+        proxy.doubleValue();
+        //ждем пока протухнит cache
+        sleep(3000);
+        proxy.doubleValue();
+        verify(clazz, times(3)).doubleValue();
+    }
+
+    @RepeatedTest(10)
+    @DisplayName("Cache обновляет время")
+    void cache_updateLocalTimeStateObjectOk() throws InterruptedException {
+        proxy.doubleValue();
+        sleep(2000);
+        proxy.setDenum(3);
+        proxy.setDenum(40);
+        proxy.doubleValue();
+        sleep(2000);
+        proxy.doubleValue();
+        verify(clazz, times(1)).doubleValue();
+    }
+
+    @RepeatedTest(10)
+    @DisplayName("Cache очищается")
+    void cache_clearCacheOk() throws InterruptedException {
+        for (int i = 1; i < 14; i++) {
+            proxy.doubleValue();
+            proxy.setDenum(i);
+        }
+        proxy.doubleValue();
+        //ждем пока протухнит cache
+        sleep(3000);
+        assertEquals(0 , InterfaceInvocationHandler.concurrentHashMap.size());
     }
 }

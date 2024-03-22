@@ -4,7 +4,6 @@
 public class CacheTestClass implements Cacheable {
     int num;
     int denum;
-    int count;
 
     public CacheTestClass(int num, int denum) {
         this.num = num;
@@ -20,7 +19,6 @@ public class CacheTestClass implements Cacheable {
     public void setNum(int num) {
         System.out.println("Мы чего-то поменяли в объекте!!!");
         this.num = num;
-        count++;
     }
 
     public int getDenum() {
@@ -32,14 +30,12 @@ public class CacheTestClass implements Cacheable {
     public void setDenum(int denum) {
         System.out.println("Мы чего-то поменяли в объекте!!!");
         this.denum = denum;
-        count++;
     }
 
     @Override
-    @Cache
+    @Cache(3000)
     public double doubleValue() {
         System.out.println("Мы чего-то порешали!!!");
-        count++;
         return (double) num/denum;
     }
 }
