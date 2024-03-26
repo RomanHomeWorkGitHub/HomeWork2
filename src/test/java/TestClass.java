@@ -32,6 +32,7 @@ class TestClass {
     @RepeatedTest(10)
     void cache_ok() {
         proxy.doubleValue();
+        proxy.doubleValue();
         StateObject stateObject = InterfaceInvocationHandler.concurrentHashMap.keySet().iterator().next();
         Method method = InterfaceInvocationHandler.concurrentHashMap.get(stateObject).keySet().iterator().next();
         assertEquals(1, InterfaceInvocationHandler.concurrentHashMap.size());
