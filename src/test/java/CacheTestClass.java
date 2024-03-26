@@ -38,4 +38,9 @@ public class CacheTestClass implements Cacheable {
         System.out.println("Мы чего-то порешали!!!");
         return (double) num/denum;
     }
+
+    public double doubleValue(int num, int denum) {
+        System.out.println("Мы чего-то порешали!!!");
+        return (double) num/denum;
+    }
 }

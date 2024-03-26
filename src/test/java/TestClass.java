@@ -3,6 +3,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
 
+import java.lang.reflect.Method;
+
 import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -30,9 +32,26 @@ class TestClass {
     @RepeatedTest(10)
     void cache_ok() {
         proxy.doubleValue();
-        proxy.doubleValue();
+        StateObject stateObject = InterfaceInvocationHandler.concurrentHashMap.keySet().iterator().next();
+        Method method = InterfaceInvocationHandler.concurrentHashMap.get(stateObject).keySet().iterator().next();
+        assertEquals(1, InterfaceInvocationHandler.concurrentHashMap.size());
+        assertEquals((double) 2/40,
+                InterfaceInvocationHandler.concurrentHashMap.get(stateObject).get(method));
         verify(clazz, times(1)).doubleValue();
     }
+
+    @RepeatedTest(10)
+    @DisplayName("Не кэшируется метод без аннотации @Cache")
+    void cache_methodWithoutAnnotationNotCached() {
+        proxy.doubleValue(2, 4);
+        assertEquals(0, InterfaceInvocationHandler.concurrentHashMap.size());
+        verify(clazz, times(0)).doubleValue();
+        verify(clazz, times(1)).doubleValue(anyInt(), anyInt());
+        proxy.doubleValue();
+        assertEquals(1, InterfaceInvocationHandler.concurrentHashMap.size());
+        verify(clazz, times(1)).doubleValue();
+    }
+
 
     @RepeatedTest(10)
     void cache_resetCacheOk() {
@@ -69,8 +88,10 @@ class TestClass {
         proxy.setDenum(3);
         proxy.setDenum(40);
         proxy.doubleValue();
+        //поидее должен протухнуть cache в настройках он 3000 ms
         sleep(2000);
         proxy.doubleValue();
+        //но он не протух, вызов метода всего один раз
         verify(clazz, times(1)).doubleValue();
     }
 
